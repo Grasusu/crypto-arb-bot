@@ -30,38 +30,29 @@ def build_graph(tickers):
     return graph, whitelist
 
 def find_best_triangle(graph, coins):
-    """
-    Checks ALL combinations of 3 coins (e.g., A -> B -> C -> A)
-    """
     best_profit = -999999
     best_path = []
     
-    # "Permutations" gives us every possible order of 3 coins
-    # e.g., (BTC, ETH, USDT), (USDT, ETH, BTC), etc.
-    possible_paths = list(itertools.permutations(coins, 3))
+    # Binance Standard Fee (0.1%). 
+    # If you use BNB to pay fees, it's 0.075%. Let's be conservative with 0.1%
+    fee_percentage = 0.001 
     
-    print(f"🔍 Scanning {len(possible_paths)} possible paths...")
+    possible_paths = list(itertools.permutations(coins, 3))
     
     for path in possible_paths:
         c1, c2, c3 = path
         
-        # Check if the "roads" exist between these cities
         if c2 in graph[c1] and c3 in graph[c2] and c1 in graph[c3]:
-            
-            # SIMULATE THE TRADE
             start_money = 100.0
             
-            # Step 1: c1 -> c2
-            step1_amt = start_money * graph[c1][c2] # Notice: We multiply by the rate
-            # Wait! In crypto, sometimes you DIVIDE depending on the pair direction.
-            # To keep this "Day 1" simple, we assume the graph values are all "multipliers".
-            # (Our build_graph logic handles the 1/price inverse, so this works!)
+            # Step 1: c1 -> c2 (Apply Fee)
+            step1_amt = (start_money * graph[c1][c2]) * (1 - fee_percentage)
             
-            # Step 2: c2 -> c3
-            step2_amt = step1_amt * graph[c2][c3]
+            # Step 2: c2 -> c3 (Apply Fee)
+            step2_amt = (step1_amt * graph[c2][c3]) * (1 - fee_percentage)
             
-            # Step 3: c3 -> c1
-            final_amt = step2_amt * graph[c3][c1]
+            # Step 3: c3 -> c1 (Apply Fee)
+            final_amt = (step2_amt * graph[c3][c1]) * (1 - fee_percentage)
             
             profit = final_amt - start_money
             
