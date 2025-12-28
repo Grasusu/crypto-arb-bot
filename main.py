@@ -43,18 +43,19 @@ def run():
             print(f"Scanning {len(config.COINS_WHITELIST)} coins...")
             
             if path:
-                c1, c2, c3 = path
+                # FIX: Handle variable path lengths (Bellman-Ford can find 4+ coin loops)
+                # Instead of "c1, c2, c3", we join the whole list into a string
+                path_str = " -> ".join(path)
+                
                 color = Fore.GREEN if profit > 0 else Fore.RED
                 
                 print("\nTop Opportunity:")
-                print(f"{Style.BRIGHT}{c1} -> {c2} -> {c3} -> {c1}")
+                print(f"{Style.BRIGHT}{path_str} -> {path[0]}") # Close the loop visually
                 print(f"{color}Net Result: ${100.00 + profit:.4f}")
                 
                 if profit > 0:
                     print(Fore.GREEN + "💰 PROFIT CONFIRMED 💰")
                     log_opportunity(path, profit)
-            else:
-                print("No valid paths found in this scan.")
             
             # 4. SLEEP
             time.sleep(config.REFRESH_RATE)
